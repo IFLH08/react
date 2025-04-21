@@ -1,43 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import Boton from "./components/Boton"
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth, AuthProvider } from './AuthContext';
+import Login from './views/Login';
+import Profile from './views/Profile';
+import Initial from './views/Initial';
+import Nav from './components/Nav';
+import Footer from './components/Footer';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
-  const msg = () => alert("Hola le diste clik")
-  //let count = 0;
-  //const setCount=() =>{
-  //  count ++;
- //}
+const PrivateRoute = ({ element }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? element : <Navigate to="/login" />;
+};
+
+function AppContent() {
+  const { isAuthenticated } = useAuth();
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+      width: '100%',
+      boxSizing: 'border-box'
+    }}>
+      {isAuthenticated && <Nav />}
+      
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '1rem'
+      }}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<PrivateRoute element={<Initial />} />} />
+          <Route path="/profile" element={<PrivateRoute element={<Profile />} />} />
+        </Routes>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((c) => (c=c+1))}> count is {count}
-        </button>
-        <Boton texto={"Suma"} />
-        <Boton texto={"Resta"}/>
-        <Boton texto={"Mensaje"} onClick={msg}/>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      
+      <Footer />
+    </div>
+  );
 }
 
-export default App
+
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
